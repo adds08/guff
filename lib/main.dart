@@ -12,12 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'WhatsApp Clone',
-        home: const LoginScreen(),
-        theme: ThemeApp.configTheme,
-      ),
+      child: MaterialApp(debugShowCheckedModeBanner: false, title: 'Guff App', home: const LoginScreen(), theme: ThemeApp.configTheme),
     );
   }
 }

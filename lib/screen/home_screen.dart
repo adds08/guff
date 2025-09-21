@@ -1,7 +1,5 @@
-import 'package:chatview/chatview.dart';
 import 'package:flutter/material.dart';
 import 'package:guff/db.dart';
-import 'package:guff/features/chats/chat_view_screen.dart';
 import 'package:guff/features/screens.dart';
 import 'package:guff/screen/create_group_screen.dart';
 import 'package:guff/screen/status_screen.dart';
@@ -9,7 +7,7 @@ import 'package:guff/theme/theme_app.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,12 +19,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   Future<List<RecordModel>> getUsers() async {
@@ -38,11 +31,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("WhatsApp"),
+        title: const Text("Guff App"),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.photo_camera_outlined)),
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert_sharp)),
+          IconButton(
+            onPressed: () {
+              pocketDB.authStore.clear();
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+            },
+            icon: const Icon(Icons.logout),
+          ),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -50,7 +49,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           indicatorWeight: 3.5,
           labelColor: ThemeApp.white,
           tabs: const [
-            Tab(child: Icon(Icons.group)),
             Tab(child: Text("CHATS")),
             Tab(child: Text("STATUS")),
             Tab(child: Text("CALL")),
@@ -59,12 +57,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => CreateGroupScreen())),
-
-        backgroundColor: ThemeApp.greenPale,
+        backgroundColor: ThemeApp.sky,
         child: const Icon(Icons.message, color: ThemeApp.white),
       ),
-
-      body: TabBarView(controller: _tabController, children: [const GroupScreen(), ChatsScreen(), const StatusScreen(), CallScreen()]),
+      body: TabBarView(controller: _tabController, children: [ChatsScreen(), const StatusScreen(), CallScreen()]),
     );
   }
 }

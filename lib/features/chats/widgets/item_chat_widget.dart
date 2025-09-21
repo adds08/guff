@@ -1,50 +1,103 @@
-import 'package:chatview/chatview.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:get_time_ago/get_time_ago.dart';
+import 'package:guff/db.dart';
 import 'package:guff/features/chats/chat_view_screen.dart';
-import 'package:guff/models/models.dart';
-import 'package:guff/features/screens.dart';
 import 'package:pocketbase/pocketbase.dart';
 import '../../../theme/theme_app.dart';
 
-class ItemChatWidget extends StatelessWidget {
-  RecordModel data;
+class GroupAvatars extends StatelessWidget {
+  final List<RecordModel> members;
+  final double radius;
 
-  ItemChatWidget({super.key, required this.data});
+  const GroupAvatars({super.key, required this.members, this.radius = 12});
+
+  /// Get initials from name
+  String _getInitials(String name) {
+    final parts = name.trim().split(" ");
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  /// Deterministic color from string
+  Color _getColorFromString(String input) {
+    final hash = input.codeUnits.fold(0, (prev, elem) => prev + elem);
+    final random = Random(hash);
+    return Colors.primaries[random.nextInt(Colors.primaries.length)];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final String timeString = data.get<String>('updated').substring(0, 2);
-    final int stringToNumber = int.parse(timeString);
-    final String pmOram = stringToNumber > 12 ? " p.m." : " a.m.";
+    final avatars = <Widget>[];
+    final showCount = members.length > 4 ? 3 : members.length;
+
+    for (int i = 0; i < showCount; i++) {
+      final member = members[i];
+      final name = member.getStringValue("name");
+      final initials = _getInitials(name);
+      final color = _getColorFromString(name);
+
+      avatars.add(
+        Padding(
+          padding: const EdgeInsets.only(right: 2),
+          child: CircleAvatar(
+            radius: radius,
+            backgroundColor: color,
+            child: Text(
+              initials,
+              style: TextStyle(color: Colors.white, fontSize: radius * 0.9),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (members.length > 4) {
+      final extra = members.length - 3;
+      avatars.add(
+        CircleAvatar(
+          radius: radius,
+          backgroundColor: Colors.grey.shade400,
+          child: Text(
+            "+$extra",
+            style: TextStyle(color: Colors.white, fontSize: radius * 0.9, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
+    return Row(mainAxisSize: MainAxisSize.min, children: avatars);
+  }
+}
+
+class ItemChatWidget extends StatelessWidget {
+  final RecordModel data;
+
+  const ItemChatWidget({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final String timeString = data.get<String>('updated');
+    final members = data.get<List<RecordModel>>("expand.members");
+    final createdBy = data.get<RecordModel>("expand.createdBy"); // assuming you have this field
+
     return ListTile(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return ChatViewScreen2(recordModel: data);
-            },
-          ),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ChatViewScreen(recordModel: data)));
       },
-      leading: CircleAvatar(
-        backgroundColor: ThemeApp.grayPale,
-        backgroundImage: NetworkImage(
-          "https://images.pexels.com/photos/11298964/pexels-photo-11298964.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load",
-        ),
-        radius: 22,
-      ),
-
+      leading: GroupAvatars(members: [pocketDB.authStore.record!], radius: 18),
       title: Text(data.get<String>('name'), style: const TextStyle(fontWeight: FontWeight.w500)),
 
-      trailing: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.center,
+      subtitle: Row(
         children: [
-          Text(
-            "${data.get<String>('updated')}$pmOram",
-            style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13.0, color: ThemeApp.gray),
-          ),
+          Text("by ${createdBy.getStringValue('name')} with", style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
+          SizedBox(width: 6),
+          GroupAvatars(members: members.where((element) => element.id != pocketDB.authStore.record!.id).toList(), radius: 12),
         ],
+      ),
+      trailing: Text(
+        GetTimeAgo.parse(DateTime.parse(timeString)),
+        style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13.0, color: ThemeApp.gray),
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/theme_app.dart';
 
 class GroupScreen extends StatelessWidget {
-  const GroupScreen({Key? key}) : super(key: key);
+  const GroupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

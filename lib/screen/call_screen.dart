@@ -24,7 +24,7 @@ class CallScreen extends StatelessWidget {
     return months[monthNum];
   }
 
-  CallScreen({Key? key}) : super(key: key);
+  CallScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

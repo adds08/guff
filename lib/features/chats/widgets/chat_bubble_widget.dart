@@ -1,13 +1,12 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:guff/theme/theme_app.dart';
 
 class ChatBubbleWidget extends StatelessWidget {
-  String message;
-  bool isMyMessage = false;
-  String timestamp;
+  final String message;
+  final bool isMyMessage;
+  final String timestamp;
 
-  ChatBubbleWidget({super.key, required this.message, required this.isMyMessage, required this.timestamp});
+  const ChatBubbleWidget({super.key, required this.message, required this.isMyMessage, required this.timestamp});
 
   @override
   Widget build(BuildContext context) {

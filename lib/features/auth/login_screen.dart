@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:guff/db.dart';
+import 'package:guff/features/auth/register_screen.dart';
 import 'package:guff/screen/home_screen.dart';
 import 'package:guff/theme/theme_app.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -85,6 +86,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: _isLoading
                     ? const CircularProgressIndicator(color: ThemeApp.white)
                     : const Text("Login", style: TextStyle(color: ThemeApp.white, fontSize: 16)),
+              ),
+            ),
+            SizedBox(height: 16),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const RegistrationScreen()));
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Text("Don't have an account? Register", style: TextStyle(color: ThemeApp.greenPale)),
               ),
             ),
           ],
