@@ -1,22 +1,53 @@
 import 'dart:ui';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/db.dart';
 import 'package:guff/widgets/widgets.dart';
 import 'package:pocketbase/pocketbase.dart';
 
-class ChatsScreen extends StatefulWidget {
+class ChatsScreen extends ConsumerStatefulWidget {
   const ChatsScreen({super.key});
 
   @override
-  State<ChatsScreen> createState() => _ChatsScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _ChatsScreenState();
 }
 
-class _ChatsScreenState extends State<ChatsScreen> {
+class _ChatsScreenState extends ConsumerState<ChatsScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    listenToFCM();
+  }
+
+  void listenToFCM() {
+    // Foreground messages
+    FirebaseMessaging.onMessage.listen((message) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message.notification?.title ?? 'No Title'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    });
+
+    // When tapping notification opens app
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print('App opened via notification: ${message.notification?.title}');
+    });
+  }
+
   Future<List<RecordModel>> getUsers() async {
-    final records = await pocketDB
+    final records = await ref
+        .watch(pocketbaseProvider)
         .collection('groups')
-        .getFullList(filter: "members~'${pocketDB.authStore.record!.id}'", expand: "members,createdBy", sort: '-updated');
+        .getFullList(
+          filter: "members~'${ref.watch(pocketbaseProvider).authStore.record!.id}'",
+          expand: "members,createdBy",
+          sort: '-updated',
+        );
     return records;
   }
 

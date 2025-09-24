@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "447061565088",
+    "project_id": "guff-6e92b",
+    "storage_bucket": "guff-6e92b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:447061565088:android:caff1569d0a34d8b26f3c5",
+        "android_client_info": {
+          "package_name": "com.codebigya.guff"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8biP8fvnbfTy3Z959KtqR0nnLxnNGBFo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:447061565088:android:2ae91618dd43c98626f3c5",
+        "android_client_info": {
+          "package_name": "com.example.guff"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8biP8fvnbfTy3Z959KtqR0nnLxnNGBFo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

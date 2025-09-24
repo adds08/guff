@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/db.dart';
 import 'package:guff/features/chats/chat_view_screen.dart';
 
-class CreateGroupScreen extends StatefulWidget {
+class CreateGroupScreen extends ConsumerStatefulWidget {
   const CreateGroupScreen({super.key});
 
   @override
-  State<CreateGroupScreen> createState() => _CreateGroupScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _CreateGroupScreenState();
 }
 
-class _CreateGroupScreenState extends State<CreateGroupScreen> {
+class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
   List<dynamic> users = [];
   List<String> selectedUserIds = [];
-  bool isLoading = false;
+  bool isLoading = true;
   TextEditingController groupNameController = TextEditingController();
 
   @override
@@ -22,16 +23,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   }
 
   Future<void> fetchUsers() async {
+    final pb = ref.read(pocketbaseProvider);
     setState(() => isLoading = true);
     try {
-      final result = await pocketDB
-          .collection('users')
-          .getFullList(filter: "id != '${pocketDB.authStore.record!.id}'"); // adjust collection name
+      final result = await pb.collection('users').getFullList(filter: "id != '${pb.authStore.record!.id}'"); // adjust collection name
       setState(() {
         users = result;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error fetching users: $e")));
     } finally {
       setState(() => isLoading = false);
     }
@@ -56,19 +55,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Select at least one member")));
       return;
     }
-
+    final pb = ref.read(pocketbaseProvider);
     setState(() => isLoading = true);
     try {
-      final group = await pocketDB
+      final group = await pb
           .collection('groups')
           .create(
             body: {
               'name': groupNameController.text, // You can ask for a group name in a TextField
-              'members': [pocketDB.authStore.record!.id, ...selectedUserIds],
-              'createdBy': pocketDB.authStore.record!.id,
+              'members': [pb.authStore.record!.id, ...selectedUserIds],
+              'createdBy': pb.authStore.record!.id,
             },
           );
-      final groupFetchAgain = await pocketDB.collection('groups').getOne(group.id, expand: "members");
+      final groupFetchAgain = await pb.collection('groups').getOne(group.id, expand: "members");
       // Navigate to group chat
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatViewScreen(recordModel: groupFetchAgain)));
     } catch (e) {

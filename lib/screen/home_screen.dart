@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:guff/core/routing/route_manager.dart';
 import 'package:guff/db.dart';
 import 'package:guff/features/screens.dart';
 import 'package:guff/screen/create_group_screen.dart';
 import 'package:guff/screen/status_screen.dart';
 import 'package:guff/theme/theme_app.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   TextEditingController personNameController = TextEditingController();
   @override
@@ -23,7 +27,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Future<List<RecordModel>> getUsers() async {
-    final records = await pocketDB.collection('users').getFullList(filter: "id != '${pocketDB.authStore.record!.id}'", sort: '-updated');
+    final records = await ref
+        .watch(pocketbaseProvider)
+        .collection('users')
+        .getFullList(filter: "id != '${ref.watch(pocketbaseProvider).authStore.record!.id}'", sort: '-updated');
     return records;
   }
 
@@ -36,9 +43,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           IconButton(onPressed: () {}, icon: const Icon(Icons.photo_camera_outlined)),
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
           IconButton(
-            onPressed: () {
-              pocketDB.authStore.clear();
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+            onPressed: () async {
+              (await SharedPreferences.getInstance()).clear();
+              ref.read(pocketbaseProvider).authStore.clear();
+              ref.read(routerProvider).replaceNamed("login");
             },
             icon: const Icon(Icons.logout),
           ),

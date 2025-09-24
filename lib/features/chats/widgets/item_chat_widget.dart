@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:guff/db.dart';
 import 'package:guff/features/chats/chat_view_screen.dart';
@@ -70,13 +71,13 @@ class GroupAvatars extends StatelessWidget {
   }
 }
 
-class ItemChatWidget extends StatelessWidget {
+class ItemChatWidget extends ConsumerWidget {
   final RecordModel data;
 
   const ItemChatWidget({super.key, required this.data});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final String timeString = data.get<String>('updated');
     final members = data.get<List<RecordModel>>("expand.members");
     final createdBy = data.get<RecordModel>("expand.createdBy"); // assuming you have this field
@@ -85,14 +86,17 @@ class ItemChatWidget extends StatelessWidget {
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) => ChatViewScreen(recordModel: data)));
       },
-      leading: GroupAvatars(members: [pocketDB.authStore.record!], radius: 18),
+      leading: GroupAvatars(members: [ref.watch(pocketbaseProvider).authStore.record!], radius: 18),
       title: Text(data.get<String>('name'), style: const TextStyle(fontWeight: FontWeight.w500)),
 
       subtitle: Row(
         children: [
           Text("by ${createdBy.getStringValue('name')} with", style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
           SizedBox(width: 6),
-          GroupAvatars(members: members.where((element) => element.id != pocketDB.authStore.record!.id).toList(), radius: 12),
+          GroupAvatars(
+            members: members.where((element) => element.id != ref.watch(pocketbaseProvider).authStore.record!.id).toList(),
+            radius: 12,
+          ),
         ],
       ),
       trailing: Text(

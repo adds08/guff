@@ -1,43 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:guff/db.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guff/core/routing/route_manager.dart';
+import 'package:guff/features/auth/provider/auth_provider.dart';
 import 'package:guff/features/auth/register_screen.dart';
-import 'package:guff/screen/home_screen.dart';
 import 'package:guff/theme/theme_app.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isLoading = false;
 
   Future<void> _login() async {
-    setState(() => _isLoading = true);
-
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please enter email and password")));
-      setState(() => _isLoading = false);
       return;
     }
 
     try {
-      await pocketDB.collection('users').authWithPassword(email, password);
+      await ref.read(authProviderProvider.notifier).login(email, password);
+      ref.read(routerProvider).go('/home');
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login successful!")));
-      // Navigate to HomeScreen after login
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login failed: $e")));
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -82,10 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: ThemeApp.greenPale, padding: const EdgeInsets.symmetric(vertical: 14)),
-                onPressed: _isLoading ? null : _login,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: ThemeApp.white)
-                    : const Text("Login", style: TextStyle(color: ThemeApp.white, fontSize: 16)),
+                onPressed: _login,
+                child: const Text("Login", style: TextStyle(color: ThemeApp.white, fontSize: 16)),
               ),
             ),
             SizedBox(height: 16),

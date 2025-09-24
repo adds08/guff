@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:guff/data/data_dummy.dart';
 import 'package:guff/widgets/widgets.dart';
 
 import '../theme/theme_app.dart';
 
 class CallScreen extends StatelessWidget {
-  DataDummy data = DataDummy();
   String getMonthName(int monthNum) {
     List<String> months = [
       "Enero",
@@ -28,7 +26,6 @@ class CallScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dataCalls = data.callsAns;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +39,7 @@ class CallScreen extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w600, color: ThemeApp.gray),
             ),
           ),
-          ...dataCalls.map((e) {
+          ...[].map((e) {
             DateTime now = DateTime.now();
             int day = now.day;
             int month = now.month;

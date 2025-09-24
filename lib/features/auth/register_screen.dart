@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/db.dart';
 import 'package:guff/features/auth/login_screen.dart';
-import 'package:guff/screen/home_screen.dart';
 import 'package:guff/theme/theme_app.dart';
 
-class RegistrationScreen extends StatefulWidget {
+class RegistrationScreen extends ConsumerStatefulWidget {
   const RegistrationScreen({super.key});
 
   @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _RegistrationScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -41,12 +41,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
 
     try {
-      await pocketDB
+      await ref
+          .watch(pocketbaseProvider)
           .collection('users')
           .create(body: {"name": name, "email": email, "emailVisibility": true, "password": password, "passwordConfirm": confirmPassword});
 
       // Auto-login after registration
-      await pocketDB.collection('users').requestVerification(email);
+      await ref.watch(pocketbaseProvider).collection('users').requestVerification(email);
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Registration successful!")));
 

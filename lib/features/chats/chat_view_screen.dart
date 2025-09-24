@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:guff/db.dart';
 import 'package:chatview/chatview.dart';
 import 'package:flutter/material.dart';
@@ -5,23 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/features/chats/provider/chats_provider.dart';
 import 'package:pocketbase/pocketbase.dart';
 
-class ChatViewScreen extends ConsumerStatefulWidget {
+class ChatViewScreen extends ConsumerWidget {
   final RecordModel recordModel;
   const ChatViewScreen({super.key, required this.recordModel});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _ChatViewScreenState();
-}
-
-class _ChatViewScreenState extends ConsumerState<ChatViewScreen> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = ref.watch(groupsProviderProvider(widget.recordModel));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = ref.watch(groupsProviderProvider(recordModel));
     return Scaffold(
       body: ChatView(
         sendMessageConfig: SendMessageConfiguration(
@@ -31,15 +22,16 @@ class _ChatViewScreenState extends ConsumerState<ChatViewScreen> {
           textFieldConfig: TextFieldConfiguration(textStyle: TextStyle(color: Colors.black)),
         ),
         appBar: AppBar(
-          title: Text(widget.recordModel.getStringValue('name')),
+          title: Text(recordModel.getStringValue('name')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.of(context).pop();
+              context.pop();
             },
           ),
         ),
-        chatController: ref.watch(groupsProviderProvider(widget.recordModel).notifier).chatController,
+
+        chatController: ref.watch(groupsProviderProvider(recordModel).notifier).chatController,
         onSendTap: (message, replyMessage, messageType) {
           if (messageType.isText) {
             final String randomId = "temp-id-${DateTime.now().millisecondsSinceEpoch}";
@@ -47,16 +39,18 @@ class _ChatViewScreenState extends ConsumerState<ChatViewScreen> {
               id: randomId,
               message: message,
               createdAt: DateTime.now(),
-              sentBy: pocketDB.authStore.record!.id,
-              reaction: Reaction(reactions: ["react"], reactedUserIds: [pocketDB.authStore.record!.id]),
+              sentBy: ref.watch(pocketbaseProvider).authStore.record!.id,
               messageType: MessageType.text,
+              replyMessage: replyMessage,
+              status: MessageStatus.pending,
             );
-            ref.read(groupsProviderProvider(widget.recordModel).notifier).sendMessage(msg);
+            ref.read(groupsProviderProvider(recordModel).notifier).sendMessage(msg);
           }
         },
+
         reactionPopupConfig: ReactionPopupConfiguration(
           userReactionCallback: (message, emoji) {
-            // ref.read(chatsProviderProvider(widget.otherUser).notifier).addReaction(message, emoji);
+            ref.read(groupsProviderProvider(recordModel).notifier).addReaction(message, emoji);
           },
         ),
         chatViewState: provider, // Add this state once data is available
