@@ -11,7 +11,19 @@
             "flutterMode": "debug",
             "args": [
                 "--debug",
-                "--disable-service-auth-codes"
+                "--disable-service-auth-codes",
+                "--dart-define='env=production'"
+            ]
+        },
+        {
+            "name": "guff Dev",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "debug",
+            "args": [
+                "--debug",
+                "--disable-service-auth-codes",
+                "--dart-define='env=development'"
             ]
         },
         {

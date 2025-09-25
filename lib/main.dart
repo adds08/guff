@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/core/routing/route_manager.dart';
+import 'package:guff/features/auth/provider/auth_provider.dart';
 import 'package:guff/theme/theme_app.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -54,7 +55,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: ref.read(routerProvider),
+      routerConfig: ref.watch(routerProvider),
       debugShowCheckedModeBanner: false,
       title: 'Guff App',
       theme: ThemeApp.configTheme,

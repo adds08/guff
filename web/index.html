@@ -1,20 +1,6 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
@@ -33,33 +19,25 @@
   <title>guff</title>
   <link rel="manifest" href="manifest.json">
 </head>
-
 <body>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <!-- Firebase (align version with worker) -->
+  <script src="https://www.gstatic.com/firebasejs/12.3.0/firebase-app-compat.js"></script>
+
+  <!-- Flutter bootstrap -->
   <script src="flutter_bootstrap.js" async></script>
-  <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
 
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-      apiKey: "AIzaSyBKb6rC6eXugh9Civd0nKnY8VuCtjTVvXI",
-      authDomain: "guff-6e92b.firebaseapp.com",
-      projectId: "guff-6e92b",
-      storageBucket: "guff-6e92b.firebasestorage.app",
-      messagingSenderId: "447061565088",
-      appId: "1:447061565088:web:cc19808f2631a58126f3c5",
-      measurementId: "G-P110BEM43L"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+  <!-- Register service worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/firebase-messaging-sw.js')
+        .then(function (registration) {
+          console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch(function (err) {
+          console.log('Service Worker registration failed:', err);
+        });
+    }
   </script>
 </body>
-
 </html>
