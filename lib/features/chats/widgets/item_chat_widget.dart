@@ -89,19 +89,27 @@ class ItemChatWidget extends ConsumerWidget {
       leading: GroupAvatars(members: [ref.watch(pocketbaseProvider).authStore.record!], radius: 18),
       title: Text(data.get<String>('name'), style: const TextStyle(fontWeight: FontWeight.w500)),
 
-      subtitle: Row(
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text("by ${createdBy.getStringValue('name')} with", style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
-          SizedBox(width: 6),
-          GroupAvatars(
-            members: members.where((element) => element.id != ref.watch(pocketbaseProvider).authStore.record!.id).toList(),
-            radius: 12,
+          Row(
+            children: [
+              Text("by ${createdBy.getStringValue('name')} with", style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
+              SizedBox(width: 6),
+              GroupAvatars(
+                members: members.where((element) => element.id != ref.watch(pocketbaseProvider).authStore.record!.id).toList(),
+                radius: 12,
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentGeometry.bottomRight,
+            child: Text(
+              GetTimeAgo.parse(DateTime.parse(timeString)),
+              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13.0, color: ThemeApp.gray),
+            ),
           ),
         ],
-      ),
-      trailing: Text(
-        GetTimeAgo.parse(DateTime.parse(timeString)),
-        style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13.0, color: ThemeApp.gray),
       ),
     );
   }

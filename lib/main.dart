@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/core/routing/route_manager.dart';
 import 'package:guff/theme/theme_app.dart';
@@ -53,6 +54,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     print("FCM Token: $token");
 
     FirebaseMessaging.onMessage.listen((message) {
+      SystemSound.play(SystemSoundType.alert);
       scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           showCloseIcon: true,
