@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:guff/core/routing/route_manager.dart';
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});

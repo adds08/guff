@@ -16,8 +16,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool isLoggingIn = false;
 
   Future<void> _login() async {
+    setState(() {
+      isLoggingIn = true;
+    });
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -28,11 +32,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       await ref.read(authProviderProvider.notifier).login(email, password);
+      setState(() {
+        isLoggingIn = true;
+      });
       ref.read(routerProvider).go('/home');
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login successful!")));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login failed: $e")));
     }
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    isLoggingIn = false;
   }
 
   @override
@@ -76,8 +90,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: ThemeApp.greenPale, padding: const EdgeInsets.symmetric(vertical: 14)),
-                onPressed: _login,
-                child: const Text("Login", style: TextStyle(color: ThemeApp.white, fontSize: 16)),
+                onPressed: isLoggingIn ? null : _login,
+                child: isLoggingIn
+                    ? CircularProgressIndicator()
+                    : const Text("Login", style: TextStyle(color: ThemeApp.white, fontSize: 16)),
               ),
             ),
             SizedBox(height: 16),

@@ -2,10 +2,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/core/routing/route_manager.dart';
-import 'package:guff/features/auth/provider/auth_provider.dart';
 import 'package:guff/theme/theme_app.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 // Background handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -50,6 +51,33 @@ class _MyAppState extends ConsumerState<MyApp> {
     // Get FCM token
     final token = await messaging.getToken();
     print("FCM Token: $token");
+
+    FirebaseMessaging.onMessage.listen((message) {
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          showCloseIcon: true,
+          content: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("${message.notification?.title ?? 'No Title'} has a message"),
+                    Text(message.notification?.body ?? 'No Body'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 10),
+        ),
+      );
+    });
+
+    // When tapping notification opens app
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print('App opened via notification: ${message.notification?.title}');
+    });
   }
 
   @override
@@ -59,6 +87,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Guff App',
       theme: ThemeApp.configTheme,
+      scaffoldMessengerKey: scaffoldMessengerKey,
     );
   }
 }

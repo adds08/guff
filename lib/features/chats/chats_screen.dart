@@ -19,24 +19,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    listenToFCM();
-  }
-
-  void listenToFCM() {
-    // Foreground messages
-    FirebaseMessaging.onMessage.listen((message) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message.notification?.title ?? 'No Title'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    });
-
-    // When tapping notification opens app
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      print('App opened via notification: ${message.notification?.title}');
-    });
   }
 
   Future<List<RecordModel>> getUsers() async {
