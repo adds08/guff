@@ -1,78 +1,47 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
+	"context"
 	"log"
-	"net/http"
 	"os"
+
+	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/messaging"
+	"google.golang.org/api/option"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
 
-type FcmMessage struct {
-	RegistrationIDs []string               `json:"registration_ids,omitempty"`
-	To              string                 `json:"to,omitempty"`
-	Notification    map[string]string      `json:"notification"`
-	Data            map[string]interface{} `json:"data,omitempty"`
-}
-
-func sendFCM(deviceTokens []string, senderName, messageContent, groupId, senderId string) {
-	serverKey := "BBWyWnMFgLIyWfumekGuEG9HgYMDy55rjA_k1c3kotBNCinFbNL83RTf5Rmxmr-V4nV1Kjd1JDQEimOECtE0Xt4"
-
-	msg := FcmMessage{
-		Notification: map[string]string{
-			"title": senderName,
-			"body":  messageContent,
-		},
-		Data: map[string]interface{}{
-			"groupId":      groupId,
-			"senderId":     senderId,
-			"message":      messageContent,
-			"click_action": "FLUTTER_NOTIFICATION_CLICK", // required for Flutter
-		},
-	}
-
-	if len(deviceTokens) == 1 {
-		msg.To = deviceTokens[0]
-	} else {
-		msg.RegistrationIDs = deviceTokens
-	}
-
-	payload, _ := json.Marshal(msg)
-
-	req, err := http.NewRequest("POST", "https://fcm.googleapis.com/v1/projects/guff-6e92b/messages:send", bytes.NewBuffer(payload))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "key="+serverKey)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("FCM send error:", err)
-		return
-	}
-	defer resp.Body.Close()
-}
-
 func main() {
 	app := pocketbase.New()
+
+	// Initialize Firebase app
+	opt := option.WithCredentialsFile("serviceAccount.json")
+	firebaseApp, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		log.Fatalln("Failed to initialize Firebase:", err)
+	}
+
+	messagingClient, err := firebaseApp.Messaging(context.Background())
+	if err != nil {
+		log.Fatalln("Failed to get messaging client:", err)
+	}
 
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		// serves static files from the provided public dir (if exists)
 		se.Router.GET("/{path...}", apis.Static(os.DirFS("./pb_public"), false))
-
 		return se.Next()
 	})
 
+	// Trigger after a chat message is created
 	app.OnRecordAfterCreateSuccess("chats").BindFunc(func(e *core.RecordEvent) error {
 		groupId := e.Record.GetString("groupId")
 		senderId := e.Record.GetString("userId")
 		message := e.Record.GetString("message")
 
-		// Fetch sender user record to get the name
+		// Fetch sender user record to get name
 		senderRecord, err := app.FindRecordById("users", senderId)
 		if err != nil {
 			log.Println("Sender not found:", err)
@@ -80,7 +49,7 @@ func main() {
 		}
 		senderName := senderRecord.GetString("name")
 
-		// Fetch group record to get members
+		// Fetch group members
 		groupRec, err := app.FindRecordById("groups", groupId)
 		if err != nil {
 			log.Println("Group not found:", err)
@@ -102,7 +71,7 @@ func main() {
 		// Fetch device tokens for members
 		var tokens []string
 		for _, userId := range memberIds {
-			devices, err := app.FindRecordsByFilter("userDevices", fmt.Sprintf("user = '%s'", userId), "", 0, 0)
+			devices, err := app.FindRecordsByFilter("userDevices", "user = '"+userId+"'", "", 0, 0)
 			if err != nil {
 				continue
 			}
@@ -114,9 +83,31 @@ func main() {
 			}
 		}
 
-		// Send FCM asynchronously
-		if len(tokens) > 0 {
-			go sendFCM(tokens, senderName, message, groupId, senderId)
+		// Send FCM notifications asynchronously
+		ctx := context.Background()
+		for _, token := range tokens {
+			msg := &messaging.Message{
+				Token: token,
+				Notification: &messaging.Notification{
+					Title: senderName,
+					Body:  message,
+				},
+				Data: map[string]string{
+					"groupId":      groupId,
+					"senderId":     senderId,
+					"message":      message,
+					"click_action": "FLUTTER_NOTIFICATION_CLICK",
+				},
+			}
+
+			go func(msg *messaging.Message) {
+				resp, err := messagingClient.SendDryRun(ctx, msg)
+				if err != nil {
+					log.Println("Error sending FCM:", err)
+				} else {
+					log.Println("FCM sent successfully:", resp)
+				}
+			}(msg)
 		}
 
 		return e.Next()
