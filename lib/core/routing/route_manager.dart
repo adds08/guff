@@ -5,6 +5,7 @@ import 'package:guff/features/auth/login_screen.dart';
 import 'package:guff/features/auth/provider/auth_provider.dart';
 import 'package:guff/features/auth/splash_screen.dart';
 import 'package:guff/features/chats/chat_view_screen.dart';
+import 'package:guff/features/groups/group_screen.dart';
 import 'package:guff/screen/home_screen.dart';
 import 'package:pocketbase/pocketbase.dart';
 
@@ -48,14 +49,23 @@ final routerProvider = Provider<GoRouter>(
         },
         routes: [
           GoRoute(
-            path: 'chat',
-            name: 'chat',
+            path: 'group',
+            name: 'group',
             builder: (BuildContext context, GoRouterState state) {
-              RecordModel data = state.extra as RecordModel;
-              return ChatViewScreen(
-                recordModel: data,
-              );
+              return GroupScreen();
             },
+            routes: [
+              GoRoute(
+                path: 'chat',
+                name: 'chat',
+                builder: (BuildContext context, GoRouterState state) {
+                  RecordModel data = state.extra as RecordModel;
+                  return ChatScreen(
+                    recordModel: data,
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),

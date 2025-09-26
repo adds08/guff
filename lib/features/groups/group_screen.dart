@@ -1,49 +1,34 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guff/features/groups/item_chat_widget.dart';
+import 'package:guff/features/groups/provider/groups_provider.dart';
+import 'package:guff/features/groups/provider/groups_state.dart';
 
-import '../../theme/theme_app.dart';
-
-class GroupScreen extends StatelessWidget {
+class GroupScreen extends ConsumerWidget {
   const GroupScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    const String titleGroup = "Introducing the Communities feature";
-    const String textGroup =
-        "Easily organize your related groups and send notices. Now your communities, like neighborhoods and schools, can have their own space.";
-
-    final imageComunity = Container(
-      height: 150.0,
-      width: 250.0,
-      decoration: const BoxDecoration(
-        image: DecorationImage(image: AssetImage("assets/comunity.png"), fit: BoxFit.cover),
-      ),
-    );
-
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 20.0),
-          imageComunity,
-          const SizedBox(height: 20.0),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 25.0),
-            child: Text(
-              titleGroup,
-              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w700, color: ThemeApp.black),
-              textAlign: TextAlign.center,
-            ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groupProvider = ref.watch(groupsProviderProvider);
+    return switch (groupProvider) {
+      GroupsViewData(:final data) => ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          physics: const BouncingScrollPhysics(),
+          dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.mouse, PointerDeviceKind.trackpad},
+        ),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await ref.refresh(groupsProviderProvider.notifier).initialize();
+          },
+          child: ListView.builder(
+            itemCount: data.length,
+            itemBuilder: (context, index) => ItemChatWidget(data: data[index]),
           ),
-          const SizedBox(height: 20.0),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 35.0),
-            child: Text(
-              textGroup,
-              textAlign: TextAlign.center,
-              style: TextStyle(height: 1.5, color: ThemeApp.gray),
-            ),
-          ),
-        ],
+        ),
       ),
-    );
+      GroupsViewError() => Text("Could not load data"),
+      _ => Center(child: CircularProgressIndicator()),
+    };
   }
 }

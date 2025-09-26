@@ -7,14 +7,14 @@ import 'package:guff/db.dart';
 import 'package:guff/widgets/widgets.dart';
 import 'package:pocketbase/pocketbase.dart';
 
-class ChatsScreen extends ConsumerStatefulWidget {
-  const ChatsScreen({super.key});
+class ChatScreen extends ConsumerStatefulWidget {
+  const ChatScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _ChatsScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _ChatScreenState();
 }
 
-class _ChatsScreenState extends ConsumerState<ChatsScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     // TODO: implement initState

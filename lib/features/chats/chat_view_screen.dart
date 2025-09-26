@@ -6,13 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/features/chats/provider/chats_provider.dart';
 import 'package:pocketbase/pocketbase.dart';
 
-class ChatViewScreen extends ConsumerWidget {
+class ChatScreen extends ConsumerWidget {
   final RecordModel recordModel;
-  const ChatViewScreen({super.key, required this.recordModel});
+  const ChatScreen({super.key, required this.recordModel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = ref.watch(groupsProviderProvider(recordModel));
+    final provider = ref.watch(chatsProviderProvider(recordModel));
     return Scaffold(
       body: ChatView(
         sendMessageConfig: SendMessageConfiguration(
@@ -31,7 +31,7 @@ class ChatViewScreen extends ConsumerWidget {
           ),
         ),
 
-        chatController: ref.watch(groupsProviderProvider(recordModel).notifier).chatController,
+        chatController: ref.watch(chatsProviderProvider(recordModel).notifier).chatController,
         onSendTap: (message, replyMessage, messageType) {
           if (messageType.isText) {
             final String randomId = "temp-id-${DateTime.now().millisecondsSinceEpoch}";
@@ -44,13 +44,13 @@ class ChatViewScreen extends ConsumerWidget {
               replyMessage: replyMessage,
               status: MessageStatus.pending,
             );
-            ref.read(groupsProviderProvider(recordModel).notifier).sendMessage(msg);
+            ref.read(chatsProviderProvider(recordModel).notifier).sendMessage(msg);
           }
         },
 
         reactionPopupConfig: ReactionPopupConfiguration(
           userReactionCallback: (message, emoji) {
-            ref.read(groupsProviderProvider(recordModel).notifier).addReaction(message, emoji);
+            ref.read(chatsProviderProvider(recordModel).notifier).addReaction(message, emoji);
           },
         ),
         chatViewState: provider, // Add this state once data is available

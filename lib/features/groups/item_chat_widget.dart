@@ -2,10 +2,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_time_ago/get_time_ago.dart';
+import 'package:go_router/go_router.dart';
+import 'package:guff/core/routing/route_manager.dart';
 import 'package:guff/db.dart';
 import 'package:guff/features/chats/chat_view_screen.dart';
 import 'package:pocketbase/pocketbase.dart';
-import '../../../theme/theme_app.dart';
+import '../../theme/theme_app.dart';
 
 class GroupAvatars extends StatelessWidget {
   final List<RecordModel> members;
@@ -84,7 +86,7 @@ class ItemChatWidget extends ConsumerWidget {
 
     return ListTile(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ChatViewScreen(recordModel: data)));
+        ref.read(routerProvider).pushNamed('chat', extra: data);
       },
       leading: GroupAvatars(members: [ref.watch(pocketbaseProvider).authStore.record!], radius: 18),
       title: Text(data.get<String>('name'), style: const TextStyle(fontWeight: FontWeight.w500)),

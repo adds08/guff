@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -45,6 +46,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           IconButton(
             onPressed: () async {
               (await SharedPreferences.getInstance()).clear();
+              await FirebaseMessaging.instance.deleteToken();
               ref.read(pocketbaseProvider).authStore.clear();
               ref.read(routerProvider).replaceNamed("login");
             },
@@ -68,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         backgroundColor: ThemeApp.sky,
         child: const Icon(Icons.message, color: ThemeApp.white),
       ),
-      body: TabBarView(controller: _tabController, children: [ChatsScreen(), const StatusScreen(), CallScreen()]),
+      body: TabBarView(controller: _tabController, children: [GroupScreen(), const StatusScreen(), CallScreen()]),
     );
   }
 }

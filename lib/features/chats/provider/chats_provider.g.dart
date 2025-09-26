@@ -9,39 +9,39 @@ part of 'chats_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(GroupsRepository)
-const groupsRepositoryProvider = GroupsRepositoryFamily._();
+@ProviderFor(ChatsRepository)
+const chatsRepositoryProvider = ChatsRepositoryFamily._();
 
-final class GroupsRepositoryProvider
-    extends $AsyncNotifierProvider<GroupsRepository, List<RecordModel>> {
-  const GroupsRepositoryProvider._({
-    required GroupsRepositoryFamily super.from,
+final class ChatsRepositoryProvider
+    extends $AsyncNotifierProvider<ChatsRepository, List<RecordModel>> {
+  const ChatsRepositoryProvider._({
+    required ChatsRepositoryFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
-         name: r'groupsRepositoryProvider',
+         name: r'chatsRepositoryProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$groupsRepositoryHash();
+  String debugGetCreateSourceHash() => _$chatsRepositoryHash();
 
   @override
   String toString() {
-    return r'groupsRepositoryProvider'
+    return r'chatsRepositoryProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  GroupsRepository create() => GroupsRepository();
+  ChatsRepository create() => ChatsRepository();
 
   @override
   bool operator ==(Object other) {
-    return other is GroupsRepositoryProvider && other.argument == argument;
+    return other is ChatsRepositoryProvider && other.argument == argument;
   }
 
   @override
@@ -50,34 +50,34 @@ final class GroupsRepositoryProvider
   }
 }
 
-String _$groupsRepositoryHash() => r'a6c6deae9ad552f60d26ee6281d489f549159cd2';
+String _$chatsRepositoryHash() => r'3681ebfbd496483528b00ee2a230a8066188110c';
 
-final class GroupsRepositoryFamily extends $Family
+final class ChatsRepositoryFamily extends $Family
     with
         $ClassFamilyOverride<
-          GroupsRepository,
+          ChatsRepository,
           AsyncValue<List<RecordModel>>,
           List<RecordModel>,
           FutureOr<List<RecordModel>>,
           String
         > {
-  const GroupsRepositoryFamily._()
+  const ChatsRepositoryFamily._()
     : super(
         retry: null,
-        name: r'groupsRepositoryProvider',
+        name: r'chatsRepositoryProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  GroupsRepositoryProvider call(String groupId) =>
-      GroupsRepositoryProvider._(argument: groupId, from: this);
+  ChatsRepositoryProvider call(String groupId) =>
+      ChatsRepositoryProvider._(argument: groupId, from: this);
 
   @override
-  String toString() => r'groupsRepositoryProvider';
+  String toString() => r'chatsRepositoryProvider';
 }
 
-abstract class _$GroupsRepository extends $AsyncNotifier<List<RecordModel>> {
+abstract class _$ChatsRepository extends $AsyncNotifier<List<RecordModel>> {
   late final _$args = ref.$arg as String;
   String get groupId => _$args;
 
@@ -100,35 +100,35 @@ abstract class _$GroupsRepository extends $AsyncNotifier<List<RecordModel>> {
   }
 }
 
-@ProviderFor(GroupsProvider)
-const groupsProviderProvider = GroupsProviderFamily._();
+@ProviderFor(ChatsProvider)
+const chatsProviderProvider = ChatsProviderFamily._();
 
-final class GroupsProviderProvider
-    extends $NotifierProvider<GroupsProvider, ChatViewState> {
-  const GroupsProviderProvider._({
-    required GroupsProviderFamily super.from,
+final class ChatsProviderProvider
+    extends $NotifierProvider<ChatsProvider, ChatViewState> {
+  const ChatsProviderProvider._({
+    required ChatsProviderFamily super.from,
     required RecordModel super.argument,
   }) : super(
          retry: null,
-         name: r'groupsProviderProvider',
+         name: r'chatsProviderProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$groupsProviderHash();
+  String debugGetCreateSourceHash() => _$chatsProviderHash();
 
   @override
   String toString() {
-    return r'groupsProviderProvider'
+    return r'chatsProviderProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  GroupsProvider create() => GroupsProvider();
+  ChatsProvider create() => ChatsProvider();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(ChatViewState value) {
@@ -140,7 +140,7 @@ final class GroupsProviderProvider
 
   @override
   bool operator ==(Object other) {
-    return other is GroupsProviderProvider && other.argument == argument;
+    return other is ChatsProviderProvider && other.argument == argument;
   }
 
   @override
@@ -149,34 +149,34 @@ final class GroupsProviderProvider
   }
 }
 
-String _$groupsProviderHash() => r'e1f7dfa236c5159a0811604b6141184ea570d44f';
+String _$chatsProviderHash() => r'd85df605ed34407a1bfca7ac2ef781c5cee77237';
 
-final class GroupsProviderFamily extends $Family
+final class ChatsProviderFamily extends $Family
     with
         $ClassFamilyOverride<
-          GroupsProvider,
+          ChatsProvider,
           ChatViewState,
           ChatViewState,
           ChatViewState,
           RecordModel
         > {
-  const GroupsProviderFamily._()
+  const ChatsProviderFamily._()
     : super(
         retry: null,
-        name: r'groupsProviderProvider',
+        name: r'chatsProviderProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  GroupsProviderProvider call(RecordModel group) =>
-      GroupsProviderProvider._(argument: group, from: this);
+  ChatsProviderProvider call(RecordModel group) =>
+      ChatsProviderProvider._(argument: group, from: this);
 
   @override
-  String toString() => r'groupsProviderProvider';
+  String toString() => r'chatsProviderProvider';
 }
 
-abstract class _$GroupsProvider extends $Notifier<ChatViewState> {
+abstract class _$ChatsProvider extends $Notifier<ChatViewState> {
   late final _$args = ref.$arg as RecordModel;
   RecordModel get group => _$args;
 

@@ -32,13 +32,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       await ref.read(authProviderProvider.notifier).login(email, password);
-      setState(() {
-        isLoggingIn = true;
-      });
+      isLoggingIn = false;
+
       ref.read(routerProvider).go('/home');
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login successful!")));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login failed: $e")));
+      setState(() {
+        isLoggingIn = false;
+      });
     }
   }
 

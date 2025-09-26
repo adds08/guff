@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'chats_provider.g.dart';
 
 @Riverpod()
-class GroupsRepository extends _$GroupsRepository {
+class ChatsRepository extends _$ChatsRepository {
   @override
   FutureOr<List<RecordModel>> build(String groupId) {
     return getMessages(groupId);
@@ -44,7 +44,7 @@ class GroupsRepository extends _$GroupsRepository {
 }
 
 @Riverpod()
-class GroupsProvider extends _$GroupsProvider {
+class ChatsProvider extends _$ChatsProvider {
   List<Message> initialMessages = [];
   late ChatController chatController;
 
@@ -101,7 +101,7 @@ class GroupsProvider extends _$GroupsProvider {
 
   Future<void> initialize(String groupId) async {
     state = ChatViewState.loading;
-    List<RecordModel> records = await ref.read(groupsRepositoryProvider(groupId).future);
+    List<RecordModel> records = await ref.read(chatsRepositoryProvider(groupId).future);
 
     initialMessages = records.map(
       (e) {
@@ -133,7 +133,7 @@ class GroupsProvider extends _$GroupsProvider {
   Future<void> sendMessage(Message message) async {
     chatController.addMessage(message);
     RecordModel createdMessage = await ref
-        .read(groupsRepositoryProvider(group.id).notifier)
+        .read(chatsRepositoryProvider(group.id).notifier)
         .sendMessages(group.id, message.message, message.replyMessage.messageId);
     Message responseMessage = message.copyWith(
       id: createdMessage.id,
@@ -151,9 +151,9 @@ class GroupsProvider extends _$GroupsProvider {
     final pb = ref.read(pocketbaseProvider);
     RecordModel createdMessage = RecordModel.fromJson({});
     if (message.reaction.reactedUserIds.contains(pb.authStore.record!.id)) {
-      createdMessage = await ref.read(groupsRepositoryProvider(group.id).notifier).updateReaction(message.id, emoji);
+      createdMessage = await ref.read(chatsRepositoryProvider(group.id).notifier).updateReaction(message.id, emoji);
     } else {
-      createdMessage = await ref.read(groupsRepositoryProvider(group.id).notifier).sendReaction(message.id, emoji);
+      createdMessage = await ref.read(chatsRepositoryProvider(group.id).notifier).sendReaction(message.id, emoji);
     }
 
     Message responseMessage = message.copyWith(
