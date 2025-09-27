@@ -56,12 +56,14 @@ final routerProvider = Provider<GoRouter>(
             },
             routes: [
               GoRoute(
-                path: 'chat',
+                path: 'chat/:id',
                 name: 'chat',
                 builder: (BuildContext context, GoRouterState state) {
-                  RecordModel data = state.extra as RecordModel;
+                  String groupId = state.pathParameters["id"]!;
+                  String groupName = state.uri.queryParameters["name"]!;
                   return ChatScreen(
-                    recordModel: data,
+                    groupName: groupName,
+                    groupId: groupId,
                   );
                 },
               ),

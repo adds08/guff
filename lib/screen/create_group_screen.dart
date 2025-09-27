@@ -69,7 +69,12 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
           );
       final groupFetchAgain = await pb.collection('groups').getOne(group.id, expand: "members");
       // Navigate to group chat
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatScreen(recordModel: groupFetchAgain)));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(groupName: groupFetchAgain.getStringValue('name'), groupId: groupFetchAgain.id),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error creating group: $e")));
     } finally {

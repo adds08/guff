@@ -33,7 +33,7 @@ final class GroupsRepositoryProvider
   GroupsRepository create() => GroupsRepository();
 }
 
-String _$groupsRepositoryHash() => r'3469e11ca6eb79ce66e1249f354d274494d48cd5';
+String _$groupsRepositoryHash() => r'09d2de6519c69895e10fd63ef35ad90ae4993840';
 
 abstract class _$GroupsRepository extends $AsyncNotifier<List<RecordModel>> {
   FutureOr<List<RecordModel>> build();

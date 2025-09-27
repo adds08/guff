@@ -4,17 +4,34 @@ import 'package:chatview/chatview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/features/chats/provider/chats_provider.dart';
-import 'package:pocketbase/pocketbase.dart';
 
 class ChatScreen extends ConsumerWidget {
-  final RecordModel recordModel;
-  const ChatScreen({super.key, required this.recordModel});
+  final String groupName;
+  final String groupId;
+  const ChatScreen({super.key, required this.groupName, required this.groupId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final provider = ref.watch(chatsProviderProvider(recordModel));
+    final provider = ref.watch(chatsProviderProvider(groupId));
+
+    ref.listen(
+      chatsProviderProvider(groupId),
+      (previous, next) {
+        if (next == ChatViewState.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Oops! Something went wrong"),
+              duration: Duration(seconds: 5),
+              showCloseIcon: true,
+            ),
+          );
+        }
+      },
+    );
+
     return Scaffold(
       body: ChatView(
+        loadingWidget: CircularProgressIndicator(),
         sendMessageConfig: SendMessageConfiguration(
           enableCameraImagePicker: false,
           enableGalleryImagePicker: false,
@@ -22,7 +39,7 @@ class ChatScreen extends ConsumerWidget {
           textFieldConfig: TextFieldConfiguration(textStyle: TextStyle(color: Colors.black)),
         ),
         appBar: AppBar(
-          title: Text(recordModel.getStringValue('name')),
+          title: Text(groupName),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -31,7 +48,7 @@ class ChatScreen extends ConsumerWidget {
           ),
         ),
 
-        chatController: ref.watch(chatsProviderProvider(recordModel).notifier).chatController,
+        chatController: ref.watch(chatsProviderProvider(groupId).notifier).chatController,
         onSendTap: (message, replyMessage, messageType) {
           if (messageType.isText) {
             final String randomId = "temp-id-${DateTime.now().millisecondsSinceEpoch}";
@@ -44,13 +61,13 @@ class ChatScreen extends ConsumerWidget {
               replyMessage: replyMessage,
               status: MessageStatus.pending,
             );
-            ref.read(chatsProviderProvider(recordModel).notifier).sendMessage(msg);
+            ref.read(chatsProviderProvider(groupId).notifier).sendMessage(msg);
           }
         },
 
         reactionPopupConfig: ReactionPopupConfiguration(
           userReactionCallback: (message, emoji) {
-            ref.read(chatsProviderProvider(recordModel).notifier).addReaction(message, emoji);
+            ref.read(chatsProviderProvider(groupId).notifier).addReaction(message, emoji);
           },
         ),
         chatViewState: provider, // Add this state once data is available

@@ -13,6 +13,17 @@ class GroupsRepository extends _$GroupsRepository {
     return getGroups();
   }
 
+  Future<RecordModel> getGroupById(String groupId) async {
+    final records = await ref
+        .read(pocketbaseProvider)
+        .collection('groups')
+        .getOne(
+          groupId,
+          expand: "members,createdBy",
+        );
+    return records;
+  }
+
   Future<List<RecordModel>> getGroups() async {
     final records = await ref
         .read(pocketbaseProvider)

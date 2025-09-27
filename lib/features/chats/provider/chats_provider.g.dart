@@ -50,7 +50,7 @@ final class ChatsRepositoryProvider
   }
 }
 
-String _$chatsRepositoryHash() => r'3681ebfbd496483528b00ee2a230a8066188110c';
+String _$chatsRepositoryHash() => r'68f95a2cf1cc18a09949182dff6c4b6ad05bcfe5';
 
 final class ChatsRepositoryFamily extends $Family
     with
@@ -107,7 +107,7 @@ final class ChatsProviderProvider
     extends $NotifierProvider<ChatsProvider, ChatViewState> {
   const ChatsProviderProvider._({
     required ChatsProviderFamily super.from,
-    required RecordModel super.argument,
+    required String super.argument,
   }) : super(
          retry: null,
          name: r'chatsProviderProvider',
@@ -149,7 +149,7 @@ final class ChatsProviderProvider
   }
 }
 
-String _$chatsProviderHash() => r'd85df605ed34407a1bfca7ac2ef781c5cee77237';
+String _$chatsProviderHash() => r'e39bd7ce0960bdc6ea9a9628b987a19d8505039d';
 
 final class ChatsProviderFamily extends $Family
     with
@@ -158,7 +158,7 @@ final class ChatsProviderFamily extends $Family
           ChatViewState,
           ChatViewState,
           ChatViewState,
-          RecordModel
+          String
         > {
   const ChatsProviderFamily._()
     : super(
@@ -169,18 +169,18 @@ final class ChatsProviderFamily extends $Family
         isAutoDispose: true,
       );
 
-  ChatsProviderProvider call(RecordModel group) =>
-      ChatsProviderProvider._(argument: group, from: this);
+  ChatsProviderProvider call(String groupId) =>
+      ChatsProviderProvider._(argument: groupId, from: this);
 
   @override
   String toString() => r'chatsProviderProvider';
 }
 
 abstract class _$ChatsProvider extends $Notifier<ChatViewState> {
-  late final _$args = ref.$arg as RecordModel;
-  RecordModel get group => _$args;
+  late final _$args = ref.$arg as String;
+  String get groupId => _$args;
 
-  ChatViewState build(RecordModel group);
+  ChatViewState build(String groupId);
   @$mustCallSuper
   @override
   void runBuild() {

@@ -1,6 +1,7 @@
 import 'package:chatview/chatview.dart';
 import 'package:flutter/material.dart';
 import 'package:guff/db.dart';
+import 'package:guff/features/groups/provider/groups_provider.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -29,17 +30,19 @@ class ChatsRepository extends _$ChatsRepository {
 
   Future<RecordModel> sendReaction(String messageId, String reaction) async {
     final pb = ref.watch(pocketbaseProvider);
-    final data = {'reaction': reaction, 'chatId': messageId, 'userId': pb.authStore.record!.id};
-    return await pb.collection('chatReactions').create(body: data);
-  }
-
-  Future<RecordModel> updateReaction(String messageId, String reaction) async {
-    final pb = ref.watch(pocketbaseProvider);
     final data = {'reaction': reaction};
-    RecordModel chatReaction = await pb
-        .collection('chatReactions')
-        .getFirstListItem("chatId='$messageId' && userId='${pb.authStore.record!.id}'");
-    return await pb.collection('chatReactions').update(chatReaction.id, body: data);
+    try {
+      RecordModel chatReaction = await pb
+          .collection('chatReactions')
+          .getFirstListItem("chatId='$messageId' && userId='${pb.authStore.record!.id}'");
+      return await pb.collection('chatReactions').update(chatReaction.id, body: data);
+    } on ClientException catch (ex) {
+      if (ex.statusCode == 404) {
+        final data = {'reaction': reaction, 'chatId': messageId, 'userId': pb.authStore.record!.id};
+        return await pb.collection('chatReactions').create(body: data);
+      }
+    }
+    throw Exception();
   }
 }
 
@@ -47,13 +50,14 @@ class ChatsRepository extends _$ChatsRepository {
 class ChatsProvider extends _$ChatsProvider {
   List<Message> initialMessages = [];
   late ChatController chatController;
+  RecordModel currentGroup = RecordModel();
 
-  late RecordModel groupRecord;
+  List<RecordModel> initalChats = [];
 
   @override
-  ChatViewState build(RecordModel group) {
+  ChatViewState build(String groupId) {
     final pb = ref.watch(pocketbaseProvider);
-    groupRecord = group;
+    initalChats = [];
     chatController = ChatController(
       initialMessageList: [],
       scrollController: ScrollController(),
@@ -63,13 +67,13 @@ class ChatsProvider extends _$ChatsProvider {
               name: pb.authStore.record!.getStringValue("name"),
             )
           : ChatUser(id: '', name: ''),
-      otherUsers: group
+      otherUsers: currentGroup
           .get<List<RecordModel>>("expand.members")
           .where((element) => (pb.authStore.record!.id != element.id))
           .map((element) => ChatUser(id: element.id, name: element.getStringValue('name')))
           .toList(),
     );
-    initialize(group.id);
+    initialize(groupId);
     subscribeToChat(pb);
     ref.onDispose(() {
       pb.collection('chats').unsubscribe();
@@ -83,7 +87,7 @@ class ChatsProvider extends _$ChatsProvider {
       if (e.action == "create" && e.record != null) {
         final msg = e.record!;
         // Add only if relevant
-        if (msg.getStringValue('groupId') == group.id && msg.getStringValue('userId') != pb.authStore.record!.id) {
+        if (msg.getStringValue('groupId') == currentGroup.id && msg.getStringValue('userId') != pb.authStore.record!.id) {
           chatController.addMessage(
             Message(
               id: msg.getStringValue("id"),
@@ -100,9 +104,25 @@ class ChatsProvider extends _$ChatsProvider {
   }
 
   Future<void> initialize(String groupId) async {
+    final pb = ref.watch(pocketbaseProvider);
+    currentGroup = await ref.read(groupsRepositoryProvider.notifier).getGroupById(groupId);
     state = ChatViewState.loading;
     List<RecordModel> records = await ref.read(chatsRepositoryProvider(groupId).future);
-
+    chatController = ChatController(
+      initialMessageList: [],
+      scrollController: ScrollController(),
+      currentUser: pb.authStore.record != null
+          ? ChatUser(
+              id: pb.authStore.record!.id,
+              name: pb.authStore.record!.getStringValue("name"),
+            )
+          : ChatUser(id: '', name: ''),
+      otherUsers: currentGroup
+          .get<List<RecordModel>>("expand.members")
+          .where((element) => (pb.authStore.record!.id != element.id))
+          .map((element) => ChatUser(id: element.id, name: element.getStringValue('name')))
+          .toList(),
+    );
     initialMessages = records.map(
       (e) {
         List<RecordModel> reactions = e.getListValue<RecordModel>('expand.chatReactions_via_chatId');
@@ -133,8 +153,8 @@ class ChatsProvider extends _$ChatsProvider {
   Future<void> sendMessage(Message message) async {
     chatController.addMessage(message);
     RecordModel createdMessage = await ref
-        .read(chatsRepositoryProvider(group.id).notifier)
-        .sendMessages(group.id, message.message, message.replyMessage.messageId);
+        .read(chatsRepositoryProvider(currentGroup.id).notifier)
+        .sendMessages(currentGroup.id, message.message, message.replyMessage.messageId);
     Message responseMessage = message.copyWith(
       id: createdMessage.id,
       status: MessageStatus.tryParse(createdMessage.getStringValue('status')),
@@ -145,25 +165,23 @@ class ChatsProvider extends _$ChatsProvider {
     ];
     chatController.initialMessageList = [...newMessages];
     chatController.addMessage(responseMessage);
+    state = ChatViewState.hasMessages;
   }
 
   Future<void> addReaction(Message message, String emoji) async {
-    final pb = ref.read(pocketbaseProvider);
-    RecordModel createdMessage = RecordModel.fromJson({});
-    if (message.reaction.reactedUserIds.contains(pb.authStore.record!.id)) {
-      createdMessage = await ref.read(chatsRepositoryProvider(group.id).notifier).updateReaction(message.id, emoji);
-    } else {
-      createdMessage = await ref.read(chatsRepositoryProvider(group.id).notifier).sendReaction(message.id, emoji);
-    }
+    try {
+      await ref.read(chatsRepositoryProvider(currentGroup.id).notifier).sendReaction(message.id, emoji);
+      state = ChatViewState.hasMessages;
+    } catch (err) {
+      state = ChatViewState.error;
+      Message prevMessage = message.copyWith(reaction: null);
+      List<Message> newMessages = [
+        for (final m in chatController.initialMessageList)
+          if (m.id == message.id) prevMessage else m,
+      ];
+      chatController.initialMessageList = [...newMessages];
 
-    Message responseMessage = message.copyWith(
-      id: createdMessage.id,
-      status: MessageStatus.tryParse(createdMessage.getStringValue('status')) ?? MessageStatus.delivered,
-    );
-    List<Message> newMessages = [
-      for (final m in chatController.initialMessageList)
-        if (m.id == message.id) responseMessage else m,
-    ];
-    chatController.initialMessageList = [...newMessages];
+      state = ChatViewState.hasMessages;
+    }
   }
 }
