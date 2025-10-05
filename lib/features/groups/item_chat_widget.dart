@@ -1,10 +1,12 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_time_ago/get_time_ago.dart';
-import 'package:guff/core/routing/route_manager.dart';
-import 'package:guff/db.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
+import 'package:guff/core/routing/route_manager.dart';
+
 import '../../theme/theme_app.dart';
 
 class GroupAvatars extends StatelessWidget {
@@ -29,7 +31,7 @@ class GroupAvatars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final avatars = <Widget>[];
+    final avatars = <AvatarWidget>[];
     final showCount = members.length > 4 ? 3 : members.length;
 
     for (int i = 0; i < showCount; i++) {
@@ -39,35 +41,14 @@ class GroupAvatars extends StatelessWidget {
       final color = _getColorFromString(name);
 
       avatars.add(
-        Padding(
-          padding: const EdgeInsets.only(right: 2),
-          child: CircleAvatar(
-            radius: radius,
-            backgroundColor: color,
-            child: Text(
-              initials,
-              style: TextStyle(color: Colors.white, fontSize: radius * 0.9),
-            ),
-          ),
+        Avatar(
+          initials: initials,
+          backgroundColor: color,
         ),
       );
     }
 
-    if (members.length > 4) {
-      final extra = members.length - 3;
-      avatars.add(
-        CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey.shade400,
-          child: Text(
-            "+$extra",
-            style: TextStyle(color: Colors.white, fontSize: radius * 0.9, fontWeight: FontWeight.bold),
-          ),
-        ),
-      );
-    }
-
-    return Row(mainAxisSize: MainAxisSize.min, children: avatars);
+    return Wrap(children: [AvatarGroup.toLeft(children: avatars)]);
   }
 }
 
@@ -79,43 +60,60 @@ class ItemChatWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final String timeString = data.get<String>('updated');
-    final members = data.get<List<RecordModel>>("expand.members");
+    // final members = data.get<List<RecordModel>>("expand.members");
     final createdBy = data.get<RecordModel>("expand.createdBy"); // assuming you have this field
 
-    return ListTile(
-      onTap: () {
-        ref
-            .read(routerProvider)
-            .pushNamed(
-              'chat',
-              queryParameters: {"name": data.get<String>('name')},
-              pathParameters: {"id": data.id},
-            );
-      },
-      leading: GroupAvatars(members: [ref.watch(pocketbaseProvider).authStore.record!], radius: 18),
-      title: Text(data.get<String>('name'), style: const TextStyle(fontWeight: FontWeight.w500)),
-
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+      child: Button.ghost(
+        onPressed: () {
+          ref
+              .read(routerProvider)
+              .pushNamed(
+                'chat',
+                queryParameters: {"name": data.get<String>('name')},
+                pathParameters: {"id": data.id},
+              );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
             children: [
-              Text("by ${createdBy.getStringValue('name')} with", style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 12)),
-              SizedBox(width: 6),
-              GroupAvatars(
-                members: members.where((element) => element.id != ref.watch(pocketbaseProvider).authStore.record!.id).toList(),
-                radius: 12,
+              Avatar(
+                initials: createdBy.getStringValue('name').split(" ").map((e) => e.substring(0, 1)).join().toUpperCase(),
+                borderRadius: 12,
+                size: 48,
+              ),
+              Gap(16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(data.get<String>('name')),
+                        ),
+                        Text(
+                          timeago.format(DateTime.parse(timeString), locale: "en_short"),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 13.0,
+                            color: ThemeApp.gray,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Gap(8),
+                    Text(
+                      "by ${createdBy.getStringValue('name')}",
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          Align(
-            alignment: AlignmentGeometry.bottomRight,
-            child: Text(
-              GetTimeAgo.parse(DateTime.parse(timeString)),
-              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13.0, color: ThemeApp.gray),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

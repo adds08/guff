@@ -50,7 +50,7 @@ final class ChatsRepositoryProvider
   }
 }
 
-String _$chatsRepositoryHash() => r'68f95a2cf1cc18a09949182dff6c4b6ad05bcfe5';
+String _$chatsRepositoryHash() => r'327458f88034b1ac69c735640655572da5f033a9';
 
 final class ChatsRepositoryFamily extends $Family
     with
@@ -149,7 +149,7 @@ final class ChatsProviderProvider
   }
 }
 
-String _$chatsProviderHash() => r'e39bd7ce0960bdc6ea9a9628b987a19d8505039d';
+String _$chatsProviderHash() => r'6bacd41c35ec9bcbe6bcf91fc529b2aa73426ea1';
 
 final class ChatsProviderFamily extends $Family
     with

@@ -55,9 +55,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: ThemeApp.white,
+          // indicatorColor: ThemeApp.white,
           indicatorWeight: 3.5,
-          labelColor: ThemeApp.white,
+          // labelColor: ThemeApp.white,
           tabs: const [
             Tab(child: Text("CHATS")),
             Tab(child: Text("STATUS")),

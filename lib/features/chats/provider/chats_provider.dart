@@ -18,8 +18,8 @@ class ChatsRepository extends _$ChatsRepository {
     final records = await ref
         .watch(pocketbaseProvider)
         .collection('chats')
-        .getFullList(expand: "chatReactions_via_chatId,replyTo", filter: "groupId = '$groupId'", sort: 'created');
-    return records;
+        .getList(page: 1, perPage: 100, expand: "chatReactions_via_chatId,replyTo", filter: "groupId = '$groupId'", sort: 'created');
+    return records.items;
   }
 
   Future<RecordModel> sendMessages(String groupId, String message, String? replyTo) async {
@@ -73,7 +73,7 @@ class ChatsProvider extends _$ChatsProvider {
           .map((element) => ChatUser(id: element.id, name: element.getStringValue('name')))
           .toList(),
     );
-    initialize(groupId);
+    initialize();
     subscribeToChat(pb);
     ref.onDispose(() {
       pb.collection('chats').unsubscribe();
@@ -103,11 +103,10 @@ class ChatsProvider extends _$ChatsProvider {
     });
   }
 
-  Future<void> initialize(String groupId) async {
+  Future<void> initialize() async {
     final pb = ref.watch(pocketbaseProvider);
     currentGroup = await ref.read(groupsRepositoryProvider.notifier).getGroupById(groupId);
     state = ChatViewState.loading;
-    List<RecordModel> records = await ref.read(chatsRepositoryProvider(groupId).future);
     chatController = ChatController(
       initialMessageList: [],
       scrollController: ScrollController(),
@@ -123,6 +122,14 @@ class ChatsProvider extends _$ChatsProvider {
           .map((element) => ChatUser(id: element.id, name: element.getStringValue('name')))
           .toList(),
     );
+
+    await getMessages();
+
+    state = ChatViewState.hasMessages;
+  }
+
+  Future<void> getMessages() async {
+    List<RecordModel> records = await ref.read(chatsRepositoryProvider(groupId).future);
     initialMessages = records.map(
       (e) {
         List<RecordModel> reactions = e.getListValue<RecordModel>('expand.chatReactions_via_chatId');
@@ -147,7 +154,6 @@ class ChatsProvider extends _$ChatsProvider {
       },
     ).toList();
     chatController.initialMessageList = [...initialMessages];
-    state = ChatViewState.hasMessages;
   }
 
   Future<void> sendMessage(Message message) async {

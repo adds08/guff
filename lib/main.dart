@@ -1,13 +1,13 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guff/core/routing/route_manager.dart';
-import 'package:guff/theme/theme_app.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:rive/rive.dart' as rive;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'firebase_options.dart';
 
-final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+// final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 // Background handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -17,6 +17,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await rive.RiveNative.init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -55,10 +56,12 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     FirebaseMessaging.onMessage.listen((message) {
       SystemSound.play(SystemSoundType.alert);
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          showCloseIcon: true,
-          content: Row(
+      if (context.mounted) {
+        showToast(
+          context: context,
+          dismissible: true,
+          showDuration: Duration(seconds: 5),
+          builder: (context, overlay) => Row(
             children: [
               Expanded(
                 child: Column(
@@ -71,9 +74,8 @@ class _MyAppState extends ConsumerState<MyApp> {
               ),
             ],
           ),
-          duration: const Duration(seconds: 10),
-        ),
-      );
+        );
+      }
     });
 
     // When tapping notification opens app
@@ -84,12 +86,12 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return ShadcnApp.router(
       routerConfig: ref.watch(routerProvider),
       debugShowCheckedModeBanner: false,
       title: 'Guff App',
-      theme: ThemeApp.configTheme,
-      scaffoldMessengerKey: scaffoldMessengerKey,
+      theme: ThemeData(),
+      // scaffoldMessengerKey: scaffoldMessengerKey,
     );
   }
 }
